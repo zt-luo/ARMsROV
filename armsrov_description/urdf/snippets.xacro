@@ -61,15 +61,16 @@
         <!-- Gain of the input command signal -->
         <gain>1</gain>
 
-        <!-- Maximum allowed input value for the input signal for thruster unit -->
-        <clampMax>0</clampMax>
-
-        <!-- Minimum allowed value for the input signal for thruster unit -->
-        <clampMin>0</clampMin>
+        <!-- 
+        Minimum and maximum allowed input value of the input signal 
+        for thruster unit 
+        -->
+        <clampMin>-6700</clampMin>
+        <clampMax>6700</clampMax>
 
         <!-- Minimum and maximum thrust force output allowed -->
-        <thrustMin>0</thrustMin>
-        <thrustMax>0</thrustMax>
+        <thrustMin>-17.64</thrustMin>
+        <thrustMax>19.6</thrustMax>
 
         <!--
         Value from 0 to 1 to set the efficiency of the output thrust force
@@ -97,10 +98,10 @@
         </dynamics>
 
         <!-- 2) First order model -->
-        <dynamics>
+        <!-- <dynamics>
           <type>FirstOrder</type>
           <timeConstant>0.0</timeConstant>
-        </dynamics>
+        </dynamics> -->
 
         <!-- 3) Yoerger's nonlinear dynamic model
         For information on the model description:
@@ -109,11 +110,11 @@
             into control system design," IEEE Journal of Oceanic Engineering, vol. 15,
             no. 3, pp. 167-178, Jul. 1990.
         -->
-        <dynamics>
+        <!-- <dynamics>
           <type>Yoerger</type>
           <alpha>0.0</alpha>
           <beta>0.0</beta>
-        </dynamics>
+        </dynamics> -->
 
         <!-- 4) Bessa's nonlinear dynamic model
         For information on the model description:
@@ -122,14 +123,14 @@
             through a fuzzy sliding mode based approach." ABCM Symposium Series in
             Mechatronics. Vol. 2. 2006.
         -->
-        <dynamics>
+        <!-- <dynamics>
           <type>Bessa</type>
           <Jmsp>0.0</Jmsp>
           <Kv1>0.0</Kv1>
           <Kv2>0.0</Kv2>
           <Kt>0.0</Kt>
           <Rm>0.0</Rm>
-        </dynamics>
+        </dynamics> -->
 
         <!--
         Choose one of the model for the steady-state curve describing the
@@ -141,10 +142,10 @@
         Output: thrust
         Function: thrust = rotorConstant * x * abs(x)
         -->
-        <conversion>
+        <!-- <conversion>
           <type>Basic</type>
-          <rotorConstant>0.0</rotorConstant>
-        </conversion>
+          <rotorConstant>0.04</rotorConstant>
+        </conversion> -->
 
         <!-- 2) Dead-zone nonlinearity described in Bessa, 2006
         Input: x
@@ -156,10 +157,10 @@
         -->
         <conversion>
           <type>Bessa</type>
-          <rotorConstantL>0.0</rotorConstantL>
-          <rotorConstantR>0.0</rotorConstantR>
-          <deltaL>0.0</deltaL>
-          <deltaR>0.0</deltaR>
+          <rotorConstantL>0.0000004257</rotorConstantL>
+          <rotorConstantR>0.0000004035</rotorConstantR>
+          <deltaL>10000</deltaL>
+          <deltaR>10000</deltaR>
         </conversion>
 
         <!-- 3) Linear interpolation
@@ -168,11 +169,11 @@
         and the thruster output will be found through linear interpolation
         of the given samples.
         -->
-        <conversion>
+        <!-- <conversion>
           <type>LinearInterp</type>
           <inputValues>0 1 2 3</inputValues>
           <outputValues>0 1 2 3</outputValues>
-        </conversion>
+        </conversion> -->
 
       </plugin>
     </gazebo>
@@ -180,114 +181,6 @@
     <gazebo reference="${robot_namespace}/thruster_${thruster_id}">
       <selfCollide>false</selfCollide>
     </gazebo>
-  </xacro:macro>
-
-
-  <!--                                                                      -->
-  <!-- MACRO FOR FIN/RUDDER UNITS  -->
-  <!--                                                                      -->
-
-  <!--
-    This macro can be used to add fins to the body of the vehicle, the fins
-    should be initialized in the actuators.xacro file. If you vehicle has no
-    fins, you can erase the macro below.
-  -->
-
-  <!-- A separate mesh for the fin should be stored in the meshes folder -->
-  <xacro:property name="fin_mesh_file" value="file://$(find armsrov_description)/meshes/fin.dae"/>
-
-  <!-- Fin joint limits  -->
-  <xacro:property name="fin_min_joint_limit" value="${0.0 * d2r}"/>
-  <xacro:property name="fin_max_joint_limit" value="${0.0 * d2r}"/>
-
-  <xacro:macro name="fin_macro" params="namespace fin_id *origin">
-      <joint name="${namespace}/fin${fin_id}_joint" type="revolute">
-          <limit effort="0" lower="${fin_min_joint_limit}" upper="${fin_max_joint_limit}" velocity="0"/>
-          <xacro:insert_block name="origin"/>
-          <axis xyz="0 0 1"/>
-          <parent link="${namespace}/base_link" />
-          <child link="${namespace}/fin${fin_id}" />
-      </joint>
-
-      <link name="${namespace}/fin${fin_id}">
-        <inertial>
-          <mass value="0.001" />
-          <origin xyz="0 0 0" rpy="0 0 0"/>
-          <inertia ixx="0.000000017" ixy="0.0" ixz="0.0"
-                 iyy="0.000000017" iyz="0.0"
-                 izz="0.000000017" />
-        </inertial>
-        <visual>
-          <origin xyz="0 0 0" rpy="0 0 0" />
-          <geometry>
-            <mesh filename="${fin_mesh_file}" scale="1 1 1"/>
-          </geometry>
-        </visual>
-      </link>
-
-      <gazebo>
-        <plugin name="${namespace}_fin${fin_id}_model" filename="libuuv_fin_ros_plugin.so">
-
-          <!--
-            First order dynamics model for the fin joint dynamics,
-            replace an appropriate time constant
-          -->
-          <dynamics>
-            <type>FirstOrder</type>
-            <timeConstant>0.0</timeConstant>
-          </dynamics>
-
-          <!--
-            Definition of the lift and drag model, choose ONE of the models
-            below according to the model you want to use.
-          -->
-
-          <!--
-            1) References for the two line lift and drag model:
-              [1] https://en.wikipedia.org/wiki/Lift_coefficient
-              [2] http://gazebosim.org/tutorials?tut=aerodynamics&cat=plugins
-          -->
-          <liftdrag>
-            <type>TwoLines</type>
-            <area>${replace here the value for the area of the fin's cross section}</area>
-            <fluid_density>0.0</fluid_density>
-            <a0>0.0</a0>
-            <alpha_stall>0.0</alpha_stall>
-            <cla>0.0</cla><!-- ^= 0.244 when using deg -->
-            <cla_stall>0.0</cla_stall>
-            <cda>0.0</cda>
-            <cda_stall>0.0</cda_stall>
-          </liftdrag>
-
-          <!--
-            2) Reference for the quadratic lift and drag model:
-              [1] Engelhardtsen, Oystein. 3D AUV Collision Avoidance.
-                  MS thesis. Institutt for teknisk kybernetikk, 2007.
-                  https://brage.bibsys.no/xmlui/handle/11250/259834
-          -->
-          <liftdrag>
-            <type>Quadratic</type>
-            <lift_constant>0.0</lift_constant>
-            <drag_constant>0.0</drag_constant>
-          </liftdrag>
-
-          <!--
-            Further parameters necessary for the lift and drag plugin
-          -->
-
-          <!-- Current velocity topic -->
-          <current_velocity_topic>/hydrodynamics/current_velocity</current_velocity_topic>
-
-          <!-- Name of the correspodent fin link and joint  -->
-          <link_name>${namespace}/fin${fin_id}</link_name>
-          <joint_name>${namespace}/fin${fin_id}_joint</joint_name>
-
-          <!-- Output topic to publish the current angle of the fin joint -->
-          <output_topic>${namespace}/fins/${fin_id}/output</output_topic>
-          <input_topic>${namespace}/fins/${fin_id}/input</input_topic>
-          <wrench_topic>${namespace}/fins/${fin_id}/wrench_topic</wrench_topic>
-        </plugin>
-      </gazebo>
   </xacro:macro>
 
 </robot>
