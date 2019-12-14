@@ -30,8 +30,8 @@
   <!-- Collision geometry mesh, usually in STL format (it is recommended to keep
   this geometry as simple as possible to improve the performance the physics engine
   regarding the computation of collision forces) -->
-  <xacro:property name="collision_mesh_file" value="file://$(find armsrov_description)/meshes/ARMsROV_collision.stl"/>
-
+  <xacro:property name="collision_mesh_file" value="file://$(find armsrov_description)/meshes/ARMsROV_no_props.dae"/>
+  
   <!-- Vehicle macro -->
   <xacro:macro name="armsrov_base" params="namespace *gazebo">
 
@@ -76,7 +76,7 @@
     <xacro:include filename="$(find armsrov_description)/urdf/actuators.xacro"/>
 
     <!-- Include the sensor modules -->
-    <!-- <xacro:include filename="$(find armsrov_description)/urdf/sensors.xacro"/> -->
+    <xacro:include filename="$(find armsrov_description)/urdf/sensors.xacro"/>
 
   </xacro:macro>
 
