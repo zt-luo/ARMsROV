@@ -7,10 +7,11 @@
             },
             "includePath": [
                 "/opt/ros/melodic/include/**",
-                "/usr/include/**"
+                "/usr/include/**",
+                "/opt/ros/melodic/include"
             ],
             "name": "ROS",
-            "compilerPath": "/usr/bin/gcc",
+            "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++17"
         }

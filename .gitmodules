@@ -1,0 +1,3 @@
+[submodule "armsrov_bridge/mavlink_c_library_v2"]
+	path = armsrov_bridge/mavlink_c_library_v2
+	url = https://github.com/zt-luo/mavlink_c_library_v2.git
