@@ -49,6 +49,30 @@ void MavlinkHandler::parseChars(char *c, size_t len)
     {
       ROS_INFO("MAVLINK_MSG_ID_MANUAL_CONTROL");
     }
+    else if (message.msgid == MAVLINK_MSG_ID_COMMAND_LONG)
+    {
+      mavlink_command_long_t cl;
+      mavlink_msg_command_long_decode(&message, &cl);
+
+      if (cl.target_system != mavlink_system_id || cl.target_component != mavlink_component_id)
+      {
+        // not for me
+        return;
+      }
+
+      if (cl.command == MAV_CMD_COMPONENT_ARM_DISARM)
+      {
+        if (cl.param1 == 1.0)
+        {
+          ROS_INFO("vehicle ARM!");
+        }
+        else
+        {
+          ROS_INFO("vehicle DISARM!");
+          send_thrusters_input(1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500);
+        }
+      }
+    }
   }
 }
 
