@@ -13,8 +13,14 @@ ros::Publisher thrusters_pub6;
 ros::Publisher thrusters_pub7;
 ros::Publisher thrusters_pub8;
 
-UdpClient client;
-MavlinkHandler mavlinkHandler;
+// change this when my id chages (ip: 192.168.122)
+const uint8_t my_sys_id = 121;
+const unsigned short my_port = 14551;
+const string remote_ip = "192.168.1.113";
+const unsigned short remote_port = 14551;
+
+MavlinkHandler mavlinkHandler(my_sys_id);
+UdpClient client(remote_ip, remote_port);
 
 void imu_cb(const sensor_msgs::Imu::ConstPtr& msg);
 void pressure_cb(const sensor_msgs::FluidPressure::ConstPtr& msg);
@@ -30,7 +36,7 @@ int main(int argc, char** argv)
 
   // start UDP server
   boost::asio::io_service io_service;
-  UdpServer server(io_service);
+  UdpServer server(io_service, my_port);
   static std::thread run_thread([&] { io_service.run(); });
 
   ros::Subscriber sub_imu = node->subscribe("/armsrov/imu", 1, imu_cb);
@@ -105,31 +111,35 @@ void send_thrusters_input(uint16_t pwm1, uint16_t pwm2, uint16_t pwm3, uint16_t 
   thrusters_msg.header = header;
 
   thrusters_msg.data = pwm2rpm(pwm1);
+  // ROS_INFO("rpm1: %f", pwm2rpm(pwm1));
   thrusters_pub1.publish(thrusters_msg);
 
   thrusters_msg.data = pwm2rpm(pwm2);
+  // ROS_INFO("rpm2: %f", pwm2rpm(pwm2));
   thrusters_pub2.publish(thrusters_msg);
 
   thrusters_msg.data = pwm2rpm(pwm3);
+  // ROS_INFO("rpm3: %f", pwm2rpm(pwm3));
   thrusters_pub3.publish(thrusters_msg);
 
   thrusters_msg.data = pwm2rpm(pwm4);
+  // ROS_INFO("rpm4: %f", pwm2rpm(pwm4));
   thrusters_pub4.publish(thrusters_msg);
 
   thrusters_msg.data = pwm2rpm(pwm5);
-  ROS_INFO("rpm5: %f", pwm2rpm(pwm5));
+  // ROS_INFO("rpm5: %f", pwm2rpm(pwm5));
   thrusters_pub5.publish(thrusters_msg);
 
   thrusters_msg.data = -pwm2rpm(pwm6);
-  ROS_INFO("rpm6: %f", -pwm2rpm(pwm6));
+  // ROS_INFO("rpm6: %f", -pwm2rpm(pwm6));
   thrusters_pub6.publish(thrusters_msg);
 
   thrusters_msg.data = -pwm2rpm(pwm7);
-  ROS_INFO("rpm7: %f", -pwm2rpm(pwm7));
+  // ROS_INFO("rpm7: %f", -pwm2rpm(pwm7));
   thrusters_pub7.publish(thrusters_msg);
 
   thrusters_msg.data = pwm2rpm(pwm8);
-  ROS_INFO("rpm8: %f", pwm2rpm(pwm8));
+  // ROS_INFO("rpm8: %f", pwm2rpm(pwm8));
   thrusters_pub8.publish(thrusters_msg);
 }
 
@@ -138,11 +148,11 @@ double pwm2rpm(uint16_t pwm)
   double ret;
   if (pwm > 1500)
   {
-    ret = sqrt((double)(pwm - 1500)) * 400;
+    ret = sqrt((double)(pwm - 1500)) * 300;
   }
   else if (pwm < 1500)
   {
-    ret = -sqrt((double)(1500 - pwm)) * 400;
+    ret = -sqrt((double)(1500 - pwm)) * 300;
   }
   else
   {

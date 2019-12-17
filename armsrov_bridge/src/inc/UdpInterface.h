@@ -35,7 +35,7 @@ private:
                    std::size_t bytes_transferred);
 
 public:
-  UdpServer(io_service& io_service);
+  UdpServer(io_service& io_service, const unsigned short my_port);
   ~UdpServer();
 };
 
@@ -48,7 +48,7 @@ private:
   udp::endpoint _remote_endpoint;
 
 public:
-  UdpClient();
+  UdpClient(string remote_ip, const unsigned short remote_port);
   ~UdpClient();
 
   void sendData(char* data, size_t len);

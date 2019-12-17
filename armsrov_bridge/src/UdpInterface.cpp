@@ -1,6 +1,6 @@
 #include "inc/UdpInterface.h"
 
-UdpServer::UdpServer(io_service& io_service) : _socket(io_service, udp::endpoint(udp::v4(), 14551))
+UdpServer::UdpServer(io_service& io_service, const unsigned short my_port) : _socket(io_service, udp::endpoint(udp::v4(), my_port))
 {
   start_receive();
 }
@@ -40,10 +40,11 @@ void UdpServer::handle_send(boost::shared_ptr<std::string> message, const boost:
   std::cout << "Send message: " << *message << "Len: " << bytes_transferred << std::endl;
 }
 
-UdpClient::UdpClient()
-  : _socket(_io_service, udp::endpoint(udp::v4(), 5601)), _remote_endpoint(address_v4::from_string("192.168.1.113"), 14551)
+UdpClient::UdpClient(string remote_ip, const unsigned short remote_port)
+  : _socket(_io_service, udp::endpoint(udp::v4(), remote_port - 2))
+  , _remote_endpoint(address_v4::from_string(remote_ip), remote_port)
 {
-    _socket.set_option(socket_base::broadcast(true));
+  _socket.set_option(socket_base::broadcast(true));
 }
 
 UdpClient::~UdpClient()
@@ -52,5 +53,5 @@ UdpClient::~UdpClient()
 
 void UdpClient::sendData(char* data, size_t len)
 {
-    _socket.send_to(buffer(data, len), _remote_endpoint);
+  _socket.send_to(buffer(data, len), _remote_endpoint);
 }

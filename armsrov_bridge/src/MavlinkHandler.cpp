@@ -1,9 +1,9 @@
 #include "inc/MavlinkHandler.h"
 
-MavlinkHandler::MavlinkHandler() : _channel(MAVLINK_COMM_0)
+MavlinkHandler::MavlinkHandler(uint8_t sys_id) : _channel(MAVLINK_COMM_0), mavlink_system_id(sys_id)
 {
-  attitudeRowData = new char[ROW_DATA_MAX_BYTES];
-  altitudeRowData = new char[ROW_DATA_MAX_BYTES];
+  attitudeRowData = new char[raw_data_max_bytes];
+  altitudeRowData = new char[raw_data_max_bytes];
 }
 
 MavlinkHandler::~MavlinkHandler()
@@ -31,7 +31,7 @@ void MavlinkHandler::parseChars(char *c, size_t len)
       mavlink_heartbeat_t hb;
       mavlink_msg_heartbeat_decode(&message, &hb);
 
-      ROS_INFO("mavlink heartbeat received. version: %d.", hb.mavlink_version);
+      ROS_INFO("mavlink heartbeat received, from ID: %d.", message.sysid);
     }
     else if (message.msgid == MAVLINK_MSG_ID_RC_CHANNELS_OVERRIDE)
     {
@@ -40,7 +40,8 @@ void MavlinkHandler::parseChars(char *c, size_t len)
 
       send_thrusters_input(rc.chan1_raw, rc.chan2_raw, rc.chan3_raw, rc.chan4_raw, rc.chan5_raw, rc.chan6_raw,
                            rc.chan7_raw, rc.chan8_raw);
-      // ROS_INFO("RC_CHANNELS_OVERRIDE: %d %d %d %d %d %d %d %d.", rc.chan1_raw, rc.chan2_raw, rc.chan3_raw, rc.chan4_raw,
+      // ROS_INFO("RC_CHANNELS_OVERRIDE: %d %d %d %d %d %d %d %d.", rc.chan1_raw, rc.chan2_raw, rc.chan3_raw,
+      // rc.chan4_raw,
       //          rc.chan5_raw, rc.chan6_raw, rc.chan7_raw, rc.chan8_raw);
       // ROS_INFO("RC_CHANNELS_OVERRIDE");
     }
@@ -64,7 +65,7 @@ size_t MavlinkHandler::attitudeSerialization(uint32_t time_boot_ms, float roll, 
   mavlink_attitude.yawspeed = yawspeed;
 
   mavlink_message_t message;
-  mavlink_msg_attitude_encode(MAVLINK_SYSTEM_ID, MAVLINK_COMPONENT_ID, &message, &mavlink_attitude);
+  mavlink_msg_attitude_encode(mavlink_system_id, mavlink_component_id, &message, &mavlink_attitude);
 
   int msg_len = mavlink_msg_to_send_buffer((uint8_t *)attitudeRowData, &message);
 
@@ -85,7 +86,7 @@ size_t MavlinkHandler::altitudeSerialization(uint32_t time_boot_ms, int32_t alt)
   mavlink_global_position_int.vz = 0;
 
   mavlink_message_t message;
-  mavlink_msg_global_position_int_encode(MAVLINK_SYSTEM_ID, MAVLINK_COMPONENT_ID, &message,
+  mavlink_msg_global_position_int_encode(mavlink_system_id, mavlink_component_id, &message,
                                          &mavlink_global_position_int);
 
   int msg_len = mavlink_msg_to_send_buffer((uint8_t *)altitudeRowData, &message);

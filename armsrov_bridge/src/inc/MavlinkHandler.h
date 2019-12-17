@@ -7,17 +7,16 @@
 extern void send_thrusters_input(uint16_t pwm1, uint16_t pwm2, uint16_t pwm3, uint16_t pwm4, uint16_t pwm5,
                                  uint16_t pwm6, uint16_t pwm7, uint16_t pwm8);
 
-#define ROW_DATA_MAX_BYTES (279)
-#define MAVLINK_SYSTEM_ID (121)
-#define MAVLINK_COMPONENT_ID (1)
-
 class MavlinkHandler
 {
 private:
   mavlink_channel_t _channel;
+  const int raw_data_max_bytes = 279;
+  const int mavlink_component_id = 1;
+  int mavlink_system_id;
 
 public:
-  MavlinkHandler();
+  MavlinkHandler(uint8_t sys_id);
   ~MavlinkHandler();
 
   char* attitudeRowData;
