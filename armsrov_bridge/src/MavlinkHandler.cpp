@@ -1,9 +1,10 @@
 #include "inc/MavlinkHandler.h"
 
-MavlinkHandler::MavlinkHandler(uint8_t sys_id) : _channel(MAVLINK_COMM_0), mavlink_system_id(sys_id)
+MavlinkHandler::MavlinkHandler(uint8_t sys_id)
+  : _channel(MAVLINK_COMM_0), _mavlink_system_id(sys_id), _vehicle_arm(false), _vehicle_mode(MANUAL)
 {
-  attitudeRowData = new char[raw_data_max_bytes];
-  altitudeRowData = new char[raw_data_max_bytes];
+  attitudeRowData = new char[_raw_data_max_bytes];
+  altitudeRowData = new char[_raw_data_max_bytes];
 }
 
 MavlinkHandler::~MavlinkHandler()
@@ -24,8 +25,9 @@ void MavlinkHandler::parseChars(char *c, size_t len)
   }
 
   if (true == msg_received)
-  {
-    //  handle message
+  {  // start msg_received
+
+    // handle message
     if (message.msgid == MAVLINK_MSG_ID_HEARTBEAT)
     {
       mavlink_heartbeat_t hb;
@@ -37,6 +39,24 @@ void MavlinkHandler::parseChars(char *c, size_t len)
     {
       mavlink_rc_channels_override_t rc;
       mavlink_msg_rc_channels_override_decode(&message, &rc);
+
+      if (rc.target_system != _mavlink_system_id)
+      {
+        // not for me
+        return;
+      }
+
+      if (!_vehicle_arm)
+      {
+        ROS_INFO("ARM first!");
+        return;
+      }
+
+      if (_vehicle_mode != LAB_REMOTE)
+      {
+        ROS_INFO("NOT in LAB_REMOTE mode. set mode first.");
+        return;
+      }
 
       send_thrusters_input(rc.chan1_raw, rc.chan2_raw, rc.chan3_raw, rc.chan4_raw, rc.chan5_raw, rc.chan6_raw,
                            rc.chan7_raw, rc.chan8_raw);
@@ -54,26 +74,78 @@ void MavlinkHandler::parseChars(char *c, size_t len)
       mavlink_command_long_t cl;
       mavlink_msg_command_long_decode(&message, &cl);
 
-      if (cl.target_system != mavlink_system_id || cl.target_component != mavlink_component_id)
+      if (cl.target_system != _mavlink_system_id)
       {
         // not for me
         return;
       }
 
+      // handle arm disarm
       if (cl.command == MAV_CMD_COMPONENT_ARM_DISARM)
       {
         if (cl.param1 == 1.0)
         {
-          ROS_INFO("vehicle ARM!");
+          if (_vehicle_arm)
+          {
+            ROS_INFO("already ARM!");
+          }
+          else
+          {
+            _vehicle_arm = true;
+            ROS_INFO("vehicle ARM!");
+          }
         }
         else
         {
-          ROS_INFO("vehicle DISARM!");
-          send_thrusters_input(1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500);
+          if (_vehicle_arm)
+          {
+            _vehicle_arm = false;
+            send_thrusters_input(1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500);
+            ROS_INFO("vehicle DISARM!");
+          }
+          else
+          {
+            ROS_INFO("already DISARM!");
+          }
         }
       }
+      else
+      {
+        ROS_INFO("unknown command: %d.", cl.command);
+      }
     }
-  }
+    else if (message.msgid == MAVLINK_MSG_ID_SET_MODE)
+    {
+      // handle set mode
+      mavlink_set_mode_t sm;
+      mavlink_msg_set_mode_decode(&message, &sm);
+
+      if (sm.target_system != _mavlink_system_id)
+      {
+        // not for me
+        return;
+      }
+
+      _vehicle_mode = (control_mode_t)(sm.custom_mode);
+
+      if ((control_mode_t)sm.custom_mode == LAB_REMOTE)
+      {
+        ROS_INFO("set vehicle mode to: LAB_REMOTE");
+      }
+      else if ((control_mode_t)sm.custom_mode == MANUAL)
+      {
+        ROS_INFO("set vehicle mode to: MANUAL");
+      }
+      else
+      {
+        ROS_INFO("set vehicle mode to: %d (NOT supported).", sm.custom_mode);
+      }
+    }
+    else
+    {
+      ROS_INFO("unknown msgid: %d.", message.msgid);
+    }
+  }  // start msg_received
 }
 
 size_t MavlinkHandler::attitudeSerialization(uint32_t time_boot_ms, float roll, float pitch, float yaw, float rollspeed,
@@ -89,7 +161,7 @@ size_t MavlinkHandler::attitudeSerialization(uint32_t time_boot_ms, float roll, 
   mavlink_attitude.yawspeed = yawspeed;
 
   mavlink_message_t message;
-  mavlink_msg_attitude_encode(mavlink_system_id, mavlink_component_id, &message, &mavlink_attitude);
+  mavlink_msg_attitude_encode(_mavlink_system_id, _mavlink_component_id, &message, &mavlink_attitude);
 
   int msg_len = mavlink_msg_to_send_buffer((uint8_t *)attitudeRowData, &message);
 
@@ -110,7 +182,7 @@ size_t MavlinkHandler::altitudeSerialization(uint32_t time_boot_ms, int32_t alt)
   mavlink_global_position_int.vz = 0;
 
   mavlink_message_t message;
-  mavlink_msg_global_position_int_encode(mavlink_system_id, mavlink_component_id, &message,
+  mavlink_msg_global_position_int_encode(_mavlink_system_id, _mavlink_component_id, &message,
                                          &mavlink_global_position_int);
 
   int msg_len = mavlink_msg_to_send_buffer((uint8_t *)altitudeRowData, &message);
