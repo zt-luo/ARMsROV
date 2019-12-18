@@ -67,7 +67,17 @@ void MavlinkHandler::parseChars(char *c, size_t len)
     }
     else if (message.msgid == MAVLINK_MSG_ID_MANUAL_CONTROL)
     {
-      ROS_INFO("MAVLINK_MSG_ID_MANUAL_CONTROL");
+      // ROS_INFO("MAVLINK_MSG_ID_MANUAL_CONTROL");
+      mavlink_manual_control_t mc;
+      mavlink_msg_manual_control_decode(&message, &mc);
+      
+      if (mc.target != _mavlink_system_id)
+      {
+        // not for me
+        return;
+      }
+
+      ROS_INFO("MANUAL: x: %d, y: %d, z: %d, r: %d, buttons: %d.", mc.x, mc.y, mc.z, mc.r, mc.buttons);
     }
     else if (message.msgid == MAVLINK_MSG_ID_COMMAND_LONG)
     {
