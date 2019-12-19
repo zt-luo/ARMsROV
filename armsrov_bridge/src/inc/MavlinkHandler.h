@@ -34,6 +34,8 @@ private:
   bool _vehicle_arm;
   control_mode_t _vehicle_mode;
 
+  void applyManualControl(mavlink_manual_control_t* mc);
+
 public:
   MavlinkHandler(uint8_t sys_id);
   ~MavlinkHandler();

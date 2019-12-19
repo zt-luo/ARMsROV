@@ -110,20 +110,20 @@ void send_thrusters_input(uint16_t pwm1, uint16_t pwm2, uint16_t pwm3, uint16_t 
 
   thrusters_msg.header = header;
 
-  thrusters_msg.data = pwm2rpm(pwm1);
-  // ROS_INFO("rpm1: %f", pwm2rpm(pwm1));
+  thrusters_msg.data = -pwm2rpm(pwm1);
+  // ROS_INFO("rpm1: %f", -pwm2rpm(pwm1));
   thrusters_pub1.publish(thrusters_msg);
 
-  thrusters_msg.data = pwm2rpm(pwm2);
-  // ROS_INFO("rpm2: %f", pwm2rpm(pwm2));
+  thrusters_msg.data = -pwm2rpm(pwm2);
+  // ROS_INFO("rpm2: %f", -pwm2rpm(pwm2));
   thrusters_pub2.publish(thrusters_msg);
 
-  thrusters_msg.data = pwm2rpm(pwm3);
-  // ROS_INFO("rpm3: %f", pwm2rpm(pwm3));
+  thrusters_msg.data = -pwm2rpm(pwm3);
+  // ROS_INFO("rpm3: %f", -pwm2rpm(pwm3));
   thrusters_pub3.publish(thrusters_msg);
 
-  thrusters_msg.data = pwm2rpm(pwm4);
-  // ROS_INFO("rpm4: %f", pwm2rpm(pwm4));
+  thrusters_msg.data = -pwm2rpm(pwm4);
+  // ROS_INFO("rpm4: %f", -pwm2rpm(pwm4));
   thrusters_pub4.publish(thrusters_msg);
 
   thrusters_msg.data = pwm2rpm(pwm5);

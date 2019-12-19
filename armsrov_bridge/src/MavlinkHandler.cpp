@@ -70,12 +70,14 @@ void MavlinkHandler::parseChars(char *c, size_t len)
       // ROS_INFO("MAVLINK_MSG_ID_MANUAL_CONTROL");
       mavlink_manual_control_t mc;
       mavlink_msg_manual_control_decode(&message, &mc);
-      
+
       if (mc.target != _mavlink_system_id)
       {
         // not for me
         return;
       }
+
+      applyManualControl(&mc);
 
       ROS_INFO("MANUAL: x: %d, y: %d, z: %d, r: %d, buttons: %d.", mc.x, mc.y, mc.z, mc.r, mc.buttons);
     }
@@ -197,4 +199,36 @@ size_t MavlinkHandler::altitudeSerialization(uint32_t time_boot_ms, int32_t alt)
 
   int msg_len = mavlink_msg_to_send_buffer((uint8_t *)altitudeRowData, &message);
   return msg_len;
+}
+
+void MavlinkHandler::applyManualControl(mavlink_manual_control_t *mc)
+{
+  int x = mc->x;
+  int y = mc->y;
+  int depth = mc->z - 500;
+  int yaw = mc->r;
+  int pitch = 0;
+  int roll = 0;
+
+  x *= 0.1;
+  y *= 0.1;
+  depth *= -0.1;
+  yaw *= 0.1;
+  pitch *= 0.25;
+  roll *= 0.25;
+
+  int motor_pwm[8] = { 1500, 1500, 1500, 1500, 1500, 1500, 1500, 1500 };
+
+  motor_pwm[0] = 1500 + yaw + x + y;
+  motor_pwm[1] = 1500 - yaw + x - y;
+  motor_pwm[2] = 1500 - yaw - x + y;
+  motor_pwm[3] = 1500 + yaw - x - y;
+
+  motor_pwm[4] = 1500 + depth - pitch + roll;
+  motor_pwm[5] = 1500 - depth + pitch + roll;
+  motor_pwm[6] = 1500 - depth - pitch - roll;
+  motor_pwm[7] = 1500 + depth + pitch - roll;
+
+  send_thrusters_input(motor_pwm[0], motor_pwm[1], motor_pwm[2], motor_pwm[3], motor_pwm[4], motor_pwm[5], motor_pwm[6],
+                       motor_pwm[7]);
 }
