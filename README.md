@@ -1,5 +1,7 @@
 # ARMsROV simulator  
 
+base on [uuv_simulator](https://github.com/uuvsimulator/uuv_simulator).
+
 ## armsrov_description  
 
 ARMsROV description include mesh file and model.  
