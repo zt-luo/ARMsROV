@@ -25,9 +25,13 @@ void MavlinkHandler::parseChars(char *c, size_t len)
   }
 
   if (true == msg_received)
-  {  // start msg_received
+  {
+    handelMessage(message);
+  }
+}
 
-    // handle message
+void MavlinkHandler::handelMessage(mavlink_message_t message)
+{
     if (message.msgid == MAVLINK_MSG_ID_HEARTBEAT)
     {
       mavlink_heartbeat_t hb;
@@ -157,7 +161,6 @@ void MavlinkHandler::parseChars(char *c, size_t len)
     {
       ROS_INFO("unknown msgid: %d.", message.msgid);
     }
-  }  // start msg_received
 }
 
 size_t MavlinkHandler::attitudeSerialization(uint32_t time_boot_ms, float roll, float pitch, float yaw, float rollspeed,
@@ -212,7 +215,7 @@ void MavlinkHandler::applyManualControl(mavlink_manual_control_t *mc)
 
   x *= 0.1;
   y *= 0.1;
-  depth *= -0.1;
+  depth *= -0.15;
   yaw *= 0.1;
   pitch *= 0.25;
   roll *= 0.25;

@@ -44,6 +44,7 @@ public:
   char* altitudeRowData;
 
   void parseChars(char* c, size_t len);
+  void handelMessage(mavlink_message_t message);
   size_t attitudeSerialization(uint32_t time_boot_ms, float roll, float pitch, float yaw, float rollspeed,
                                float pitchspeed, float yawspeed);
   size_t altitudeSerialization(uint32_t time_boot_ms, int32_t alt);
