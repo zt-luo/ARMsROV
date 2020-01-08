@@ -24,6 +24,7 @@ UdpClient client(remote_ip, remote_port);
 
 void imu_cb(const sensor_msgs::Imu::ConstPtr& msg);
 void pressure_cb(const sensor_msgs::FluidPressure::ConstPtr& msg);
+void joint_states_cb(const sensor_msgs::JointState::ConstPtr& msg);
 void send_thrusters_input(uint16_t pwm1, uint16_t pwm2, uint16_t pwm3, uint16_t pwm4, uint16_t pwm5, uint16_t pwm6,
                           uint16_t pwm7, uint16_t pwm8);
 double pwm2rpm(uint16_t pwm);
@@ -41,6 +42,7 @@ int main(int argc, char** argv)
 
   ros::Subscriber sub_imu = node->subscribe("/armsrov/imu", 1, imu_cb);
   ros::Subscriber sub_pressure = node->subscribe("/armsrov/pressure", 1, pressure_cb);
+  ros::Subscriber sub_joint_states = node->subscribe("/armsrov/joint_states", 1, joint_states_cb);
 
   thrusters_pub1 = node->advertise<uuv_gazebo_ros_plugins_msgs::FloatStamped>("/armsrov/thrusters/1/input", 1);
   thrusters_pub2 = node->advertise<uuv_gazebo_ros_plugins_msgs::FloatStamped>("/armsrov/thrusters/2/input", 1);
@@ -96,6 +98,11 @@ void pressure_cb(const sensor_msgs::FluidPressure::ConstPtr& msg)
   // ROS_INFO("alt: %d mm", alt);
   size_t msg_len = mavlinkHandler.altitudeSerialization(time_boot_ms, -alt);
   client.sendData(mavlinkHandler.altitudeRowData, msg_len);
+}
+
+void joint_states_cb(const sensor_msgs::JointState::ConstPtr& msg)
+{
+  // ROS_INFO("joint_states.");
 }
 
 void send_thrusters_input(uint16_t pwm1, uint16_t pwm2, uint16_t pwm3, uint16_t pwm4, uint16_t pwm5, uint16_t pwm6,
