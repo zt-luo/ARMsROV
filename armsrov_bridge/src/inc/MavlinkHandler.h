@@ -34,6 +34,8 @@ private:
   bool _vehicle_arm;
   control_mode_t _vehicle_mode;
 
+  void handelMessage(mavlink_message_t message);
+
   void applyManualControl(mavlink_manual_control_t* mc);
 
 public:
@@ -44,7 +46,6 @@ public:
   char* altitudeRowData;
 
   void parseChars(char* c, size_t len);
-  void handelMessage(mavlink_message_t message);
   size_t attitudeSerialization(uint32_t time_boot_ms, float roll, float pitch, float yaw, float rollspeed,
                                float pitchspeed, float yawspeed);
   size_t altitudeSerialization(uint32_t time_boot_ms, int32_t alt);
