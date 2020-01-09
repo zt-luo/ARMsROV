@@ -159,7 +159,7 @@
           <type>Bessa</type>
           <rotorConstantL>0.0000004257</rotorConstantL>
           <rotorConstantR>0.0000004035</rotorConstantR>
-          <deltaL>10000</deltaL>
+          <deltaL>-10000</deltaL>
           <deltaR>10000</deltaR>
         </conversion>
 
