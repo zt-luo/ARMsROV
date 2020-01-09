@@ -26,6 +26,7 @@ sudo apt install ros-melodic-uuv-simulator
 
 ``` bash
 mkdir ARMsROV
+cd ARMsROV
 # clone repo
 git clone https://github.com/zt-luo/ARMsROV.git src --recursive
 
